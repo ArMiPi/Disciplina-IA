@@ -7,9 +7,9 @@ class Genetico:
     PESO_HC2 = 0.8
     PESO_SC1 = 0.3
     PESO_SC2 = 0.2
-    TAM_POPULACAO_INICIAL = 200
-    GERACOES = 500
-    TAXA_MUTACAO = 0.09
+    TAM_POPULACAO_INICIAL = 500
+    GERACOES = 1000
+    TAXA_MUTACAO = 0.02
 
 
     def __init__(self, dataset, verboso = False):
@@ -38,11 +38,10 @@ class Genetico:
 
             self.populacao.pop(self.populacao_fitness[-1][0])
             self.populacao.append(novo_cromossomo)
+            self.inserir_novo_fitness()
 
             if rd.random() <= self.TAXA_MUTACAO:
                 self.mutacao()
-
-            self.ordenar_populacao()
 
         self.imprimir_melhores()
 
@@ -116,6 +115,14 @@ class Genetico:
         self.populacao_fitness = sorted(auxiliar, key = lambda x: x[1], reverse = True)
 
 
+    def inserir_novo_fitness(self):
+        indice = len(self.populacao) - 1
+        cromossomo = self.populacao[indice]
+
+        self.populacao_fitness.append((indice, self.fitness(cromossomo)))
+        self.populacao_fitness = sorted(self.populacao_fitness, key = lambda x: x[1], reverse = True)
+
+
     def fitness(self, cromossomo: list[int]) -> float:
         # Contadores de constraints.
         hc_1 = 0    # Um professor não pode estar em aula em duas turmas no mesmo horário.
@@ -184,15 +191,17 @@ class Genetico:
 
 
     def mutacao(self):
-        turma_1 = rd.randint(0, 3)
-        turma_2 = rd.randint(0, 3)
+        cromossomo = self.populacao.pop(rd.randint(0, len(self.populacao) - 1))
+        turma = rd.randint(0, 3)
+        aula = rd.randint(0, 19)
+        nova_aula = rd.randint(0, 8)
 
-        while turma_2 == turma_1:
-            turma_2 = rd.randint(0, 3)
+        while cromossomo[turma][aula] == nova_aula:
+            nova_aula = rd.randint(0, 8)
 
-        aula_1 = rd.randint(0, 19)
-        aula_2 = rd.randint(0, 19)
-        indice = rd.randint(0, len(self.populacao) - 1)
+        cromossomo[turma][aula] = nova_aula
 
-        self.populacao[indice][turma_1][aula_1] = rd.randint(0, 8)
-        self.populacao[indice][turma_2][aula_2] = rd.randint(0, 8)
+        self.populacao.append(cromossomo)
+        self.inserir_novo_fitness()
+        
+        
