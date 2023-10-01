@@ -7,9 +7,9 @@ class Genetico:
     PESO_HC2 = 0.8
     PESO_SC1 = 0.3
     PESO_SC2 = 0.2
-    TAM_POPULACAO_INICIAL = 500
-    GERACOES = 1000
-    TAXA_MUTACAO = 0.02
+    TAM_POPULACAO_INICIAL = 1000
+    GERACOES = 5000
+    TAXA_MUTACAO = 0.25
 
 
     def __init__(self, dataset, verboso = False):
@@ -35,14 +35,17 @@ class Genetico:
             cromossomos.append(self.populacao[self.populacao_fitness[0][0]])
             cromossomos.append(self.populacao[self.populacao_fitness[1][0]])
             novo_cromossomo = self.crossover(cromossomos)
+            remover_indice = self.populacao_fitness[-1][0]
 
-            self.populacao.pop(self.populacao_fitness[-1][0])
+            self.populacao.pop(remover_indice)
             self.populacao.append(novo_cromossomo)
+            self.remover_fitness(remover_indice)
             self.inserir_novo_fitness()
 
             if rd.random() <= self.TAXA_MUTACAO:
                 self.mutacao()
 
+        self.ordenar_populacao()
         self.imprimir_melhores()
 
 
@@ -123,6 +126,16 @@ class Genetico:
         self.populacao_fitness = sorted(self.populacao_fitness, key = lambda x: x[1], reverse = True)
 
 
+    def remover_fitness(self, indice):
+        i = 0
+
+        for fitness in self.populacao_fitness:
+            if fitness[0] == indice:
+                self.populacao_fitness.pop(i)
+
+            i += 1
+
+
     def fitness(self, cromossomo: list[int]) -> float:
         # Contadores de constraints.
         hc_1 = 0    # Um professor não pode estar em aula em duas turmas no mesmo horário.
@@ -191,17 +204,34 @@ class Genetico:
 
 
     def mutacao(self):
-        cromossomo = self.populacao.pop(rd.randint(0, len(self.populacao) - 1))
+        # # Troca de horário.
+        # indice = rd.randint(0, len(self.populacao) - 1)
+        # cromossomo = self.populacao.pop(indice)
+        # turma = rd.randint(0, 3)
+        # aula_1 = rd.randint(0, 19)
+        # aula_2 = rd.randint(0, 19)
+
+        # while aula_1 == aula_2:
+        #     aula_2 = rd.randint(0, 19)
+
+        # cromossomo[turma][aula_1], cromossomo[turma][aula_2] = cromossomo[turma][aula_2], cromossomo[turma][aula_1]
+        
+        # self.populacao.append(cromossomo)
+        # self.remover_fitness(indice)
+        # self.inserir_novo_fitness()
+
+        # Embaralhamento de horários.
+        indice = rd.randint(0, 19)
         turma = rd.randint(0, 3)
-        aula = rd.randint(0, 19)
-        nova_aula = rd.randint(0, 8)
+        ponto_corte = rd.randint(4, 15)
 
-        while cromossomo[turma][aula] == nova_aula:
-            nova_aula = rd.randint(0, 8)
+        cromossomo = self.populacao.pop(indice)
+        embaralhado = cromossomo[turma][ponto_corte:]
 
-        cromossomo[turma][aula] = nova_aula
+        rd.shuffle(embaralhado)
+
+        cromossomo[turma] = cromossomo[turma][:ponto_corte] + embaralhado
 
         self.populacao.append(cromossomo)
+        self.remover_fitness(indice)
         self.inserir_novo_fitness()
-        
-        
