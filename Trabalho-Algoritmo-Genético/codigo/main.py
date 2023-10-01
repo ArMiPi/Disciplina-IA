@@ -1,5 +1,6 @@
 from genetico import Genetico
+import pandas as pd
 
 if __name__ == "__main__":
-    genetico = Genetico(imprimir_populacao = True)
-    
+    dataset = pd.read_csv('../disciplinas.csv', sep = ';')
+    genetico = Genetico(dataset, imprimir_populacao = True)
