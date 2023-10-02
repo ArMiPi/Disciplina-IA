@@ -9,12 +9,13 @@ class Genetico:
     PESO_HC2 = 0.8
     PESO_SC1 = 0.3
     PESO_SC2 = 0.2
-    TAM_POPULACAO_INICIAL = 2000
-    GERACOES = TAM_POPULACAO_INICIAL * 9
+    TAM_POPULACAO_INICIAL = 1000
+    GERACOES = TAM_POPULACAO_INICIAL * 4
     TAXA_MUTACAO = 0.3
+    NUM_COMPARACOES = 5
 
 
-    def __init__(self, dataset, verboso = False):
+    def __init__(self, dataset, verboso = False, modo_comparacao = False):
         rd.seed()
 
         self.utils = Uteis(self.TAM_POPULACAO_INICIAL, self.GERACOES, self.TAXA_MUTACAO, verboso)
@@ -22,6 +23,7 @@ class Genetico:
         self.populacao_fitness = []
         self.dataset = dataset
         self.verboso = verboso
+        self.modo_comparacao = modo_comparacao
         self.hora_inicio = dt.now()
 
         self.ordenar_populacao()
@@ -33,26 +35,43 @@ class Genetico:
 
     
     def resolver(self):
+        fitness_acumulado = 0
+
         if self.verboso:
             self.utils.imprimir_inicio_algoritmo(self.hora_inicio)
 
-        for _ in range(self.GERACOES):
-            cromossomos = []
-            cromossomos.append(self.populacao[self.populacao_fitness[0][0]])
-            cromossomos.append(self.populacao[self.populacao_fitness[1][0]])
-            novo_cromossomo = self.crossover(cromossomos)
-            remover_indice = self.populacao_fitness[-1][0]
+        for i in range(self.NUM_COMPARACOES):
+            if self.modo_comparacao:
+                print(f">>> Iniciando iteração {i + 1}.")
 
-            self.populacao.pop(remover_indice)
-            self.populacao.append(novo_cromossomo)
-            self.remover_fitness(remover_indice)
-            self.inserir_novo_fitness()
+            for _ in range(self.GERACOES):
+                cromossomos = []
+                cromossomos.append(self.populacao[self.populacao_fitness[0][0]])
+                cromossomos.append(self.populacao[self.populacao_fitness[1][0]])
+                novo_cromossomo = self.crossover(cromossomos)
+                remover_indice = self.populacao_fitness[-1][0]
 
-            if rd.random() <= self.TAXA_MUTACAO:
-                self.mutacao()
+                self.populacao.pop(remover_indice)
+                self.populacao.append(novo_cromossomo)
+                self.remover_fitness(remover_indice)
+                self.inserir_novo_fitness()
+
+                if rd.random() <= self.TAXA_MUTACAO:
+                    self.mutacao()
+
+            if self.modo_comparacao:
+                fitness_iteracao = self.populacao_fitness[0][1]
+                fitness_acumulado += fitness_iteracao
+                print(f">>> Fitness da iteração {i + 1}: {fitness_iteracao}.\n")
 
         self.ordenar_populacao()
-        self.utils.imprimir_resultado(self.hora_inicio, self.populacao, self.populacao_fitness)
+        
+        if not self.modo_comparacao:
+            self.utils.imprimir_resultado(self.hora_inicio, self.populacao, self.populacao_fitness)
+
+        if self.modo_comparacao:
+            print("=" * 100)
+            print(f">>> Fitness médio da comparação: {fitness_acumulado / self.NUM_COMPARACOES}.")
 
 
     def fitness(self, cromossomo: list[int]):
@@ -105,14 +124,16 @@ class Genetico:
     def crossover(self, individuos):
         cromossomo_a = individuos[0]
         cromossomo_b = individuos[1]
+        ponto_corte_1 = rd.randint(1, 18)
+        ponto_corte_2 = rd.randint(ponto_corte_1, 19)
         novo_cromossomo = []
 
         for i in range(4):
             gene_a = cromossomo_a[i]
             gene_b = cromossomo_b[i]
-            ponto_corte = rd.randint(4, 15)
 
-            novo_cromossomo.append(gene_a[:ponto_corte] + gene_b[ponto_corte:])
+            novo_gene = gene_a[:ponto_corte_1] + gene_b[ponto_corte_1:ponto_corte_2] + gene_a[ponto_corte_2:]
+            novo_cromossomo.append(novo_gene)
 
         return novo_cromossomo
 
