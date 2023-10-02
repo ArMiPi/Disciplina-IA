@@ -9,10 +9,10 @@ class Genetico:
     PESO_HC2 = 0.8
     PESO_SC1 = 0.3
     PESO_SC2 = 0.2
-    TAM_POPULACAO_INICIAL = 1000
-    GERACOES = TAM_POPULACAO_INICIAL * 4
+    TAM_POPULACAO_INICIAL = 2500
+    GERACOES = TAM_POPULACAO_INICIAL * 8
     TAXA_MUTACAO = 0.3
-    NUM_COMPARACOES = 5
+    NUM_COMPARACOES = 1
 
 
     def __init__(self, dataset, verboso = False, modo_comparacao = False):
@@ -124,16 +124,23 @@ class Genetico:
     def crossover(self, individuos):
         cromossomo_a = individuos[0]
         cromossomo_b = individuos[1]
-        ponto_corte_1 = rd.randint(1, 18)
-        ponto_corte_2 = rd.randint(ponto_corte_1, 19)
-        novo_cromossomo = []
+        novo_cromossomo = [[], [], [], []]
 
-        for i in range(4):
-            gene_a = cromossomo_a[i]
-            gene_b = cromossomo_b[i]
+        for i in range(20):
+            violacoes_a = self.utils.calculo_violacao(cromossomo_a, i)
+            violacoes_b = self.utils.calculo_violacao(cromossomo_b, i)
 
-            novo_gene = gene_a[:ponto_corte_1] + gene_b[ponto_corte_1:ponto_corte_2] + gene_a[ponto_corte_2:]
-            novo_cromossomo.append(novo_gene)
+            if violacoes_a <= violacoes_b:
+                novo_cromossomo[0].append(cromossomo_a[0][i])
+                novo_cromossomo[1].append(cromossomo_a[1][i])
+                novo_cromossomo[2].append(cromossomo_a[2][i])
+                novo_cromossomo[3].append(cromossomo_a[3][i])
+
+            else:
+                novo_cromossomo[0].append(cromossomo_b[0][i])
+                novo_cromossomo[1].append(cromossomo_b[1][i])
+                novo_cromossomo[2].append(cromossomo_b[2][i])
+                novo_cromossomo[3].append(cromossomo_b[3][i])
 
         return novo_cromossomo
 

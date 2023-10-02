@@ -86,3 +86,14 @@ class Uteis:
                 f"População inicial: {self.tam_populacao_inicial} indivíduos.\n" + 
                 f"Gerações: {self.geracoes}.\n" +
                 f"Taxa de mutação: {self.taxa_mutacao * 100}%.\n")
+        
+
+    def calculo_violacao(self, cromossomo, indice):
+        aulas = []
+
+        aulas.append(cromossomo[0][indice])
+        aulas.append(cromossomo[1][indice])
+        aulas.append(cromossomo[2][indice])
+        aulas.append(cromossomo[3][indice])
+
+        return 4 - len(set(aulas))
