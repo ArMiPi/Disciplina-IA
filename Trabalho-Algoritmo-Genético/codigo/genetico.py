@@ -9,9 +9,9 @@ class Genetico:
     PESO_HC2 = 0.8
     PESO_SC1 = 0.3
     PESO_SC2 = 0.2
-    TAM_POPULACAO_INICIAL = 10
+    TAM_POPULACAO_INICIAL = 2000
     GERACOES = TAM_POPULACAO_INICIAL * 9
-    TAXA_MUTACAO = 0.35
+    TAXA_MUTACAO = 0.3
 
 
     def __init__(self, dataset, verboso = False):
@@ -105,16 +105,16 @@ class Genetico:
     def crossover(self, individuos):
         cromossomo_a = individuos[0]
         cromossomo_b = individuos[1]
+        novo_cromossomo = []
 
         for i in range(4):
             gene_a = cromossomo_a[i]
             gene_b = cromossomo_b[i]
             ponto_corte = rd.randint(4, 15)
 
-            cromossomo_a[i] = gene_a[:ponto_corte] + gene_b[ponto_corte:]
-            cromossomo_b[i] = gene_b[:ponto_corte] + gene_a[ponto_corte:]
+            novo_cromossomo.append(gene_a[:ponto_corte] + gene_b[ponto_corte:])
 
-        return [cromossomo_a, cromossomo_b]
+        return novo_cromossomo
 
 
     def mutacao(self):
