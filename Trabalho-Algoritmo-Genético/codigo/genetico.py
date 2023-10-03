@@ -9,13 +9,12 @@ class Genetico:
     PESO_HC2 = 0.8
     PESO_SC1 = 0.3
     PESO_SC2 = 0.2
-    TAM_POPULACAO_INICIAL = 2500
-    GERACOES = TAM_POPULACAO_INICIAL * 8
+    TAM_POPULACAO_INICIAL = 3000
+    GERACOES = TAM_POPULACAO_INICIAL * 12
     TAXA_MUTACAO = 0.3
-    NUM_COMPARACOES = 1
 
 
-    def __init__(self, dataset, verboso = False, modo_comparacao = False):
+    def __init__(self, dataset, verboso = False):
         rd.seed()
 
         self.utils = Uteis(self.TAM_POPULACAO_INICIAL, self.GERACOES, self.TAXA_MUTACAO, verboso)
@@ -23,7 +22,6 @@ class Genetico:
         self.populacao_fitness = []
         self.dataset = dataset
         self.verboso = verboso
-        self.modo_comparacao = modo_comparacao
         self.hora_inicio = dt.now()
 
         self.ordenar_populacao()
@@ -35,46 +33,27 @@ class Genetico:
 
     
     def resolver(self):
-        fitness_acumulado = 0
-
         if self.verboso:
             self.utils.imprimir_inicio_algoritmo(self.hora_inicio)
 
-        for i in range(self.NUM_COMPARACOES):
-            if self.modo_comparacao:
-                print(f">>> Iniciando iteração {i + 1}.")
+        for _ in range(self.GERACOES):
+            cromossomos = []
+            cromossomos.append(self.populacao[rd.randint(0, len(self.populacao) - 1)])
+            cromossomos.append(self.populacao[rd.randint(0, len(self.populacao) - 1)])
 
-            for _ in range(self.GERACOES):
-                cromossomos = []
-                cromossomos.append(self.populacao[self.populacao_fitness[0][0]])
-                cromossomos.append(self.populacao[self.populacao_fitness[1][0]])
-                novo_cromossomo = self.crossover(cromossomos)
-                remover_indice = self.populacao_fitness[-1][0]
+            self.populacao.append(self.crossover(cromossomos))
+            self.inserir_novo_fitness()
+            removido = self.remover_fitness()
+            self.populacao.pop(removido[0])
 
-                self.populacao.pop(remover_indice)
-                self.populacao.append(novo_cromossomo)
-                self.remover_fitness(remover_indice)
-                self.inserir_novo_fitness()
-
-                if rd.random() <= self.TAXA_MUTACAO:
-                    self.mutacao()
-
-            if self.modo_comparacao:
-                fitness_iteracao = self.populacao_fitness[0][1]
-                fitness_acumulado += fitness_iteracao
-                print(f">>> Fitness da iteração {i + 1}: {fitness_iteracao}.\n")
+            if rd.random() <= self.TAXA_MUTACAO:
+                self.mutacao()
 
         self.ordenar_populacao()
-        
-        if not self.modo_comparacao:
-            self.utils.imprimir_resultado(self.hora_inicio, self.populacao, self.populacao_fitness)
-
-        if self.modo_comparacao:
-            print("=" * 100)
-            print(f">>> Fitness médio da comparação: {fitness_acumulado / self.NUM_COMPARACOES}.")
+        self.utils.imprimir_resultado(self.hora_inicio, self.populacao, self.populacao_fitness)
 
 
-    def fitness(self, cromossomo: list[int]):
+    def fitness(self, cromossomo):
         # Contadores de constraints.
         hc_1 = 0    # Um professor não pode estar em aula em duas turmas no mesmo horário.
         hc_2 = 0    # Todas as turmas devem cumprir as cargas horárias das disciplinas.
@@ -130,6 +109,7 @@ class Genetico:
             violacoes_a = self.utils.calculo_violacao(cromossomo_a, i)
             violacoes_b = self.utils.calculo_violacao(cromossomo_b, i)
 
+            # Considera apenas violações da HC 1.
             if violacoes_a <= violacoes_b:
                 novo_cromossomo[0].append(cromossomo_a[0][i])
                 novo_cromossomo[1].append(cromossomo_a[1][i])
@@ -179,11 +159,14 @@ class Genetico:
         self.populacao_fitness = sorted(self.populacao_fitness, key = lambda x: x[1], reverse = True)
 
 
-    def remover_fitness(self, indice):
+    def remover_fitness(self, indice = -1):
+        if indice == -1:
+            return self.populacao_fitness.pop(indice)
+
         i = 0
 
         for fitness in self.populacao_fitness:
             if fitness[0] == indice:
-                self.populacao_fitness.pop(i)
+                return self.populacao_fitness.pop(i)
 
             i += 1
