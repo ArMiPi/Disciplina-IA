@@ -11,7 +11,7 @@ class Genetico:
     PESO_SC2 = 0.2
     TAM_POPULACAO_INICIAL = 3000
     GERACOES = TAM_POPULACAO_INICIAL * 12
-    TAXA_MUTACAO = 0.3
+    TAXA_MUTACAO = 0.1
 
 
     def __init__(self, dataset, verboso = False):

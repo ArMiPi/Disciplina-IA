@@ -27,10 +27,16 @@ class Uteis:
     def imprimir_resultado(self, hora_inicio, populacao, populacao_fitness):
         contador = 0
         hora_fim = dt.now()
+        nova_linha = '\n'
 
         print("=" * 100)
         print(">>> Imprimindo resultados:\n\n" +
-              f"Tempo decorrido: {hora_fim - hora_inicio}.\n")
+              f"Tempo decorrido: {hora_fim - hora_inicio}.{nova_linha if self.verboso else ''}")
+        
+        if not self.verboso:
+            print(f"População inicial: {self.tam_populacao_inicial} indivíduos.\n" + 
+                  f"Gerações: {self.geracoes}.\n" +
+                  f"Taxa de mutação: {self.taxa_mutacao * 100}%.\n")
 
         for elemento in populacao_fitness:
             if contador == 3:
